@@ -1,25 +1,22 @@
 from model.generator import DailyLLAMA
-from typing import Any, Optional, Required
+from typing import Any, Optional
 from dataclasses import dataclass, field
 from transformers import HfArgumentParser
 
 @dataclass
 class ScriptArguments:
     """
-    The name of the Casual LM model we wish to fine with SFTTrainer
+    Arguments for the script
     """
-
-    model_name: Optional[str] = field(default="meta-llama/Llama-2-7b-chat-hf", metadata={"help": "the model name"})
-    dataset_path: Optional[str] = field(
-        default="data/news-small.json", metadata={"help": "the dataset location"}
-    )
-    embedding_model: Required[str] = field(
+    dataset_path: str = field(metadata={"help": "the path to the dataset"})
+    model_name: str = field(default="meta-llama/Llama-2-7b-chat-hf", metadata={"help": "the model name"})
+    embedding_model: str = field(
         default="intfloat/e5-small-v2",metadata={"help": "the embedding model name"}
     )
-    embedding_col: Optional[str] = field(default="title", metadata={"help": "the field name to embed"})
-    content_col: Optional[str] = field(default="content", metadata={"help": "the field name contains the content"})
-    load_in_8bit: Optional[bool] = field(default=False, metadata={"help": "load the model in 8 bits precision"})
-    load_in_4bit: Optional[bool] = field(default=False, metadata={"help": "load the model in 4 bits precision"})
+    embedding_col: str= field(default="title", metadata={"help": "the field name to embed"})
+    content_col: str = field(default="content", metadata={"help": "the field name contains the content"})
+    load_in_8bit: bool = field(default=False, metadata={"help": "load the model in 8 bits precision"})
+    load_in_4bit: bool = field(default=False, metadata={"help": "load the model in 4 bits precision"})
     trust_remote_code: Optional[bool] = field(default=True, metadata={"help": "Enable `trust_remote_code`"})
     use_auth_token: Optional[bool] = field(default=True, metadata={"help": "Use HF auth token to access the model"})
 
