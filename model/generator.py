@@ -78,8 +78,8 @@ class DailyLLAMA:
         Returns:
             Any: The result of the function.
         """
-        vector = self.vectorizer.encode_single(text=query)
-        topk = self.indexer.topk(vector=vector['embeddings'], k=k)
+        vector = self.vectorizer.encode_single(text=query)['embeddings'].detach().cpu().numpy()
+        topk = self.indexer.topk(vector=vector, k=k)
         docs = self.vectorizer.content[topk]
         docs = np.array(docs).reshape(-1)
         prompt =  self.generate_prompt(docs=docs, query=query)

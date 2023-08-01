@@ -9,6 +9,7 @@ class ScriptArguments:
     Arguments for the script
     """
     dataset_path: str = field(metadata={"help": "the path to the dataset"})
+    query:str = field(metadata={"help": "the user query"})
     model_name: str = field(default="meta-llama/Llama-2-7b-chat-hf", metadata={"help": "the model name"})
     embedding_model: str = field(
         default="intfloat/e5-small-v2",metadata={"help": "the embedding model name"}
@@ -33,20 +34,10 @@ def generate():
         use_auth_token=args.use_auth_token,
         embedding_model=args.embedding_model,
     )
-
-    # daily_llama = lambda x:x
-
-    try:
-        while True:
-            user_input = input("User: ").strip()
-            if user_input!='':
-                response = daily_llama(user_input)
-            else:
-                continue
-            print("Assistance: ",response)
-
-    except KeyboardInterrupt:
-        print("\nExiting...")
+    query = args.query.strip()
+    if query!='':
+        response = daily_llama(query)
+        print(response)
 
 if __name__ == "__main__":
     generate()
