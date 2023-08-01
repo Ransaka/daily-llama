@@ -1,5 +1,5 @@
 from model.generator import DailyLLAMA
-from typing import Any, Optional
+from typing import Optional
 from dataclasses import dataclass, field
 from transformers import HfArgumentParser
 
@@ -34,14 +34,19 @@ def generate():
         embedding_model=args.embedding_model,
     )
 
+    # daily_llama = lambda x:x
+
     try:
         while True:
-            user_input = input("Input: ")
-            response = daily_llama(user_input)
-            print(response)
+            user_input = input("User: ").strip()
+            if user_input!='':
+                response = daily_llama(user_input)
+            else:
+                continue
+            print("Assistance: ",response)
 
     except KeyboardInterrupt:
-        print("Exiting...")
+        print("\nExiting...")
 
 if __name__ == "__main__":
     generate()
