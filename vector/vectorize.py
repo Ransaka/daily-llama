@@ -15,6 +15,7 @@ class DailyLlamaVectorizer:
     def __init__(self, file_path, column_to_embed, content_column, model_id="intfloat/e5-small-v2"):
         self.df = pd.read_json(file_path).dropna(subset=[column_to_embed])
         self.model_id = model_id
+        self.model_id ="sentence-transformers/all-mpnet-base-v2"
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)

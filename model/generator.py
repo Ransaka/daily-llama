@@ -21,7 +21,7 @@ class DailyLLAMA:
             embedding_model="intfloat/e5-small-v2",
     ) -> None:
         self.vectorizer = DailyLlamaVectorizer(
-            file_path=source_data_path, column_to_embed=source_column, content_column=content_column, model_id=embedding_model)
+            file_path=source_data_path, column_to_embed=source_column, content_column=content_column)
         self.embeddings = self.vectorizer.retrave_embeddings(
             output_type='numpy')
         self.indexer = DailyLlamaIndexer(self.embeddings)
@@ -30,7 +30,7 @@ class DailyLLAMA:
         self.trust_remote_code = trust_remote_code
         self.model_name = model_name
         self.use_auth_token = use_auth_token
-        self._load_model()
+        # self._load_model()
 
     def configure_model_settings(self):
         """
@@ -82,10 +82,11 @@ class DailyLLAMA:
         topk = self.indexer.topk(vector=vector, k=k)
         docs = self.vectorizer.content[topk]
         docs = np.array(docs).reshape(-1)
-        prompt =  self.generate_prompt(docs=docs, query=query)
-        response = self.generate(prompt=prompt)
-        assistance_response = response.split("ASSISTANT:")[-1].strip()
-        return assistance_response
+        print(docs)
+        # prompt =  self.generate_prompt(docs=docs, query=query)
+        # response = self.generate(prompt=prompt)
+        # assistance_response = response.split("ASSISTANT:")[-1].strip()
+        # return assistance_response
 
     @staticmethod
     def generate_prompt(docs: np.array, query: str) -> str:
@@ -105,7 +106,7 @@ class DailyLLAMA:
         information = "\n".join(docs)
         # return f"{intro}\n- {information}\n{query}"
         prompt_template = f'''SYSTEM: {intro}.
-        SYSTEM: {information}.
+                            SYSTEM: {information}.
                             USER: {query}
 
                             ASSISTANT:
@@ -158,7 +159,7 @@ class DailyLLAMA:
         
         # Disable gradient calculation and run the model to generate output
         with torch.no_grad():
-            outputs = self.model.generate(**inputs)
+            outputs = self.model.generate(**inputs, max_new_tokens=256, temperature=0.01, top_p=0.95, repetition_penalty=1.1)
         
         # Decode the generated output and remove special tokens
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)

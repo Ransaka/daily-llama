@@ -35,9 +35,13 @@ def generate():
         embedding_model=args.embedding_model,
     )
     query = args.query.strip()
+    print(query)
     if query!='':
         response = daily_llama(query)
         print(response)
+        # print(daily_llama.__dict__)
+        # print(daily_llama.vectorizer.__dict__)
+        # print(daily_llama.indexer.__dict__)
 
 if __name__ == "__main__":
     generate()
