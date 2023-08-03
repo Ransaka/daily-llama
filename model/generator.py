@@ -22,7 +22,7 @@ class DailyLLAMA:
     ) -> None:
         self.vectorizer = DailyLlamaVectorizer(
             file_path=source_data_path, column_to_embed=source_column, content_column=content_column)
-        self.embeddings = self.vectorizer.retrave_embeddings(
+        self.embeddings = self.vectorizer.retrieve_embeddings(
             output_type='numpy')
         self.indexer = DailyLlamaIndexer(self.embeddings)
         self.load_in_4bit = load_in_4bit
@@ -30,7 +30,7 @@ class DailyLLAMA:
         self.trust_remote_code = trust_remote_code
         self.model_name = model_name
         self.use_auth_token = use_auth_token
-        # self._load_model()
+        self._load_model()
 
     def configure_model_settings(self):
         """
@@ -83,10 +83,10 @@ class DailyLLAMA:
         docs = self.vectorizer.content[topk]
         docs = np.array(docs).reshape(-1)
         print(docs)
-        # prompt =  self.generate_prompt(docs=docs, query=query)
-        # response = self.generate(prompt=prompt)
-        # assistance_response = response.split("ASSISTANT:")[-1].strip()
-        # return assistance_response
+        prompt =  self.generate_prompt(docs=docs, query=query)
+        response = self.generate(prompt=prompt)
+        assistance_response = response.split("ASSISTANT:")[-1].strip()
+        return assistance_response
 
     @staticmethod
     def generate_prompt(docs: np.array, query: str) -> str:
