@@ -105,7 +105,7 @@ class DailyLlamaVectorizer:
         # Return the embeddings as a dictionary
         return {"embeddings": embeddings}
 
-    def prepair_dataset(self):
+    def prepare_dataset(self):
         """
         Prepares the dataset for training.
 
@@ -128,7 +128,7 @@ class DailyLlamaVectorizer:
 
     def run(self):
         # Prepare the dataset
-        self.prepair_dataset()
+        self.prepare_dataset()
 
         # Map the encoded dataset to embeddings using the _get_embedding function
         dataset_hidden = self.encoded_dataset.map(
@@ -137,7 +137,7 @@ class DailyLlamaVectorizer:
         # Detach the embeddings tensor from the computation graph, move it to the CPU, and convert it to a numpy array
         self.embeddings = dataset_hidden['embeddings'].detach().cpu().numpy()
 
-    def retrave_embeddings(self, out_path=None, output_type="pandas"):
+    def retrieve_embeddings(self, out_path=None, output_type="pandas"):
         # Run the function
         self.run()
 
