@@ -8,5 +8,5 @@ This project presents a retrieval-augmented generation framework tailored for ne
 
 ### Usage info
 ```bash
-python3 daily-llama.py --dataset_path data/news-small.json --query "What happended to Dimuth in this week?"
+python3 daily-llama.py --dataset_path data/news-small.json --load_in_4bit True --query "What happended to Dimuth in this week?"
 ```
