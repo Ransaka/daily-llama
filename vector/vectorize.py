@@ -139,6 +139,7 @@ class DailyLlamaVectorizer:
     def retrieve_embeddings(self, out_path=None, output_type="pandas"):
         # Run the function
         self.run()
+        print("\033[1;32;40mEmbeddings Generated\033[0m")
 
         if output_type == "pandas":
             # Create a DataFrame with the embeddings array and columns labeled as '0', '1', '2', ...

@@ -13,4 +13,4 @@ torchvision==0.15.2
 tqdm==4.65.0
 transformers==4.31.0
 bitsandbytes==0.40.2
-chromadb
+accelerate

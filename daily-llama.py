@@ -2,6 +2,9 @@ from model.generator import DailyLLAMA
 from typing import Optional
 from dataclasses import dataclass, field
 from transformers import HfArgumentParser
+import warnings
+
+warnings.filterwarnings("ignore")
 
 @dataclass
 class ScriptArguments:
@@ -32,7 +35,6 @@ def generate():
         trust_remote_code=args.trust_remote_code,
         model_name=args.model_name,
         use_auth_token=args.use_auth_token,
-        embedding_model=args.embedding_model,
     )
     query = args.query.strip()
     print(query)

@@ -1,5 +1,4 @@
-from typing import Any, Optional
-from dataclasses import dataclass, field
+from typing import Any
 from transformers import AutoModelForCausalLM, BitsAndBytesConfig, AutoTokenizer
 import numpy as np
 import torch
@@ -91,9 +90,17 @@ class DailyLLAMA:
         topk = self.indexer.topk(vector=vector, k=k)
         docs = self.vectorizer.content[topk]
         docs = np.array(docs).reshape(-1)
-        print(docs)
+        print("\033[1;33;40mRetrieved documents\033[0m")
+        for doc in docs:
+            print(" -\033[1;32;40m{}\033[0m".format(doc))
         prompt = self.generate_prompt(docs=docs, query=query)
-        response = self.generate(prompt=prompt)
+        response = self.generate(
+            prompt=prompt, 
+            max_new_tokens=max_new_tokens, 
+            temperature=temperature, 
+            top_p=top_p, 
+            repetition_penalty=repetition_penalty
+            )
         assistance_response = response.split("ASSISTANT:")[-1].strip()
         return assistance_response
 
@@ -109,20 +116,22 @@ class DailyLLAMA:
         Returns:
             str: The generated prompt for the Q&A bot.
         """
-        B_INST, E_INST = "[INST]", "[/INST]"
-        B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-        INTRO = "You are a helpful, respectful and honest Q&A assistant, and you have the following information. "
-        INSTRUCT =  "Respond to the folowing user queries by choosing most related contents. " \
-                    "Start your answer with 'Based on past newspaper contents,'"
-        CONTEXT = "\n".join(docs)
+        
+        intro = "You are a Q&A bot, and you have the following information. " \
+                "Answer to folowing user queries by choosing most related contents. " \
+                "Start your answer with 'Based on past newspaper contents,'"
+        information = "\n".join(docs)
+        # return f"{intro}\n- {information}\n{query}"
+        prompt_template = f'''SYSTEM: {intro}.
+                            SYSTEM: {information}.
+                            USER: {query}
+                            ASSISTANT:
+                            '''
 
-        sys_msg = "<s>" + B_SYS + INTRO + CONTEXT + E_SYS
-        instruction = B_INST + INSTRUCT + E_INST
-
-        human_msg = instruction + "\nUser: {input}"
+        # human_msg = INSTRUCT + f"\nUSER: {query}\nASSISTANT: "
 
         # return f"{intro}\n- {information}\n{query}"
-        prompt_template = sys_msg + human_msg
+        # prompt_template = sys_msg + human_msg
         return prompt_template
 
     def __repr__(self):
@@ -156,7 +165,14 @@ class DailyLLAMA:
         # Load the tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
-    def generate(self, prompt: str) -> str:
+    def generate(
+            self,
+            prompt: str,
+            max_new_tokens=256,
+            temperature=0.01,
+            top_p=0.95,
+            repetition_penalty=1.1
+    ) -> str:
         """
         Generate a response using a given prompt.
 
@@ -173,7 +189,7 @@ class DailyLLAMA:
         # Disable gradient calculation and run the model to generate output
         with torch.no_grad():
             outputs = self.model.generate(
-                **inputs, max_new_tokens=256, temperature=0.01, top_p=0.95, repetition_penalty=1.1)
+                **inputs, max_new_tokens=max_new_tokens, temperature=temperature, top_p=top_p, repetition_penalty=repetition_penalty)
 
         # Decode the generated output and remove special tokens
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
