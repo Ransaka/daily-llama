@@ -69,7 +69,7 @@ class DailyLLAMA:
     def __call__(
             self,
             query,
-            k=3,
+            retriever_k=3,
             max_new_tokens=256,
             temperature=0.01,
             top_p=0.95,
@@ -87,7 +87,7 @@ class DailyLLAMA:
         """
         vector = self.vectorizer.encode_single(
             text=query)['embeddings'].detach().cpu().numpy()
-        topk = self.indexer.topk(vector=vector, k=k)
+        topk = self.indexer.topk(vector=vector, k=retriever_k)
         docs = self.vectorizer.content[topk]
         docs = np.array(docs).reshape(-1)
         print("\033[1;33;40mRetrieved documents\033[0m")
