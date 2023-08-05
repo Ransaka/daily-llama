@@ -8,7 +8,8 @@ This project presents a retrieval-augmented generation framework tailored for ne
 
 ### Demo
 
-<video src="https://youtu.be/Q2E0z3DKZC4" controls title="Title"></video>
+https://github.com/Ransaka/daily-llama/assets/48125060/703feeaf-9a54-4831-9718-ed448e26be0d
+
 ### Usage info
 ```bash
 python3 daily-llama.py --dataset_path data/news-small.json --load_in_4bit True --query "What happened with Dimuth's cricket career?"
