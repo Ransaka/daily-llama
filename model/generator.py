@@ -18,7 +18,6 @@ class DailyLLAMA:
             trust_remote_code,
             model_name,
             use_auth_token,
-            embedding_model="intfloat/e5-small-v2",
     ) -> None:
         self.vectorizer = DailyLlamaVectorizer(
             file_path=source_data_path, column_to_embed=source_column, content_column=content_column)
@@ -47,7 +46,8 @@ class DailyLLAMA:
         # Check if both load_in_8bit and load_in_4bit are True
         if self.load_in_8bit and self.load_in_4bit:
             # Raise an error if both load_in_8bit and load_in_4bit are True
-            raise ValueError("You can't load the model in 8 bits and 4 bits at the same time")
+            raise ValueError(
+                "You can't load the model in 8 bits and 4 bits at the same time")
         # Check if either load_in_8bit or load_in_4bit is True
         elif self.load_in_8bit or self.load_in_4bit:
             # Configure quantization settings based on load_in_8bit and load_in_4bit values
@@ -67,7 +67,15 @@ class DailyLLAMA:
             # Set torch data type to None
             self.torch_dtype = None
 
-    def __call__(self, query, k=4) -> Any:
+    def __call__(
+            self,
+            query,
+            k=3,
+            max_new_tokens=256,
+            temperature=0.01,
+            top_p=0.95,
+            repetition_penalty=1.1
+    ) -> Any:
         """
         Call the function.
 
@@ -78,12 +86,13 @@ class DailyLLAMA:
         Returns:
             Any: The result of the function.
         """
-        vector = self.vectorizer.encode_single(text=query)['embeddings'].detach().cpu().numpy()
+        vector = self.vectorizer.encode_single(
+            text=query)['embeddings'].detach().cpu().numpy()
         topk = self.indexer.topk(vector=vector, k=k)
         docs = self.vectorizer.content[topk]
         docs = np.array(docs).reshape(-1)
         print(docs)
-        prompt =  self.generate_prompt(docs=docs, query=query)
+        prompt = self.generate_prompt(docs=docs, query=query)
         response = self.generate(prompt=prompt)
         assistance_response = response.split("ASSISTANT:")[-1].strip()
         return assistance_response
@@ -100,17 +109,20 @@ class DailyLLAMA:
         Returns:
             str: The generated prompt for the Q&A bot.
         """
-        intro = "You are a Q&A bot, and you have the following information. " \
-                "Answer user queries based on the below information. " \
-                "Start your answer with 'Based on past newspaper contents...'"
-        information = "\n".join(docs)
-        # return f"{intro}\n- {information}\n{query}"
-        prompt_template = f'''SYSTEM: {intro}.
-                            SYSTEM: {information}.
-                            USER: {query}
+        B_INST, E_INST = "[INST]", "[/INST]"
+        B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
+        INTRO = "You are a helpful, respectful and honest Q&A assistant, and you have the following information. "
+        INSTRUCT =  "Respond to the folowing user queries by choosing most related contents. " \
+                    "Start your answer with 'Based on past newspaper contents,'"
+        CONTEXT = "\n".join(docs)
 
-                            ASSISTANT:
-                            '''
+        sys_msg = "<s>" + B_SYS + INTRO + CONTEXT + E_SYS
+        instruction = B_INST + INSTRUCT + E_INST
+
+        human_msg = instruction + "\nUser: {input}"
+
+        # return f"{intro}\n- {information}\n{query}"
+        prompt_template = sys_msg + human_msg
         return prompt_template
 
     def __repr__(self):
@@ -119,18 +131,18 @@ class DailyLLAMA:
     def _load_model(self):
         """
         Load the model and tokenizer for the chatbot.
-        
+
         This function is responsible for configuring the model settings, loading the pre-trained model, and loading the tokenizer.
-        
+
         Parameters:
             self (object): The instance of the class.
-        
+
         Returns:
             None
         """
         # Configure model settings
         self.configure_model_settings()
-        
+
         # Load the model
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,  # Name of the pre-trained model
@@ -140,7 +152,7 @@ class DailyLLAMA:
             torch_dtype=self.torch_dtype,  # Torch data type
             use_auth_token=self.use_auth_token,  # Whether to use authentication token
         )
-        
+
         # Load the tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
@@ -155,14 +167,16 @@ class DailyLLAMA:
             str: The generated response.
         """
         # Tokenize the prompt using the tokenizer and convert to PyTorch tensors
-        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
-        
+        inputs = self.tokenizer(
+            prompt, return_tensors="pt").to(self.model.device)
+
         # Disable gradient calculation and run the model to generate output
         with torch.no_grad():
-            outputs = self.model.generate(**inputs, max_new_tokens=256, temperature=0.01, top_p=0.95, repetition_penalty=1.1)
-        
+            outputs = self.model.generate(
+                **inputs, max_new_tokens=256, temperature=0.01, top_p=0.95, repetition_penalty=1.1)
+
         # Decode the generated output and remove special tokens
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        
+
         # Return the generated response
         return response

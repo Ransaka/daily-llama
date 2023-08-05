@@ -15,7 +15,6 @@ class DailyLlamaVectorizer:
     def __init__(self, file_path, column_to_embed, content_column, model_id="intfloat/e5-small-v2"):
         self.df = pd.read_json(file_path).dropna(subset=[column_to_embed])
         self.model_id = model_id
-        self.model_id ="sentence-transformers/all-mpnet-base-v2"
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
@@ -132,7 +131,7 @@ class DailyLlamaVectorizer:
 
         # Map the encoded dataset to embeddings using the _get_embedding function
         dataset_hidden = self.encoded_dataset.map(
-            self._get_embedding, batched=True, batch_size=100)
+            self._get_embedding, batched=True, batch_size= round(len(self.encoded_dataset)/10))
 
         # Detach the embeddings tensor from the computation graph, move it to the CPU, and convert it to a numpy array
         self.embeddings = dataset_hidden['embeddings'].detach().cpu().numpy()
